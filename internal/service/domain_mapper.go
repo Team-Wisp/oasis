@@ -14,20 +14,22 @@ const domainMapFile = "domain_map.json"
 
 func MapDomainToOrg(domain string) string {
 	// Load existing mapping
-	mapping := make(map[string]string)
+	var mapping map[string]string = make(map[string]string)
 
+	var data []byte
 	data, err := os.ReadFile(domainMapFile)
 	if err == nil {
 		json.Unmarshal(data, &mapping)
 	}
 
 	// Check if domain is already present in file
+	var org string
 	if org, exists := mapping[domain]; exists {
 		return org
 	}
 
 	// if not present then fetch new mapping
-	org := fetchOrgNameFromOpenAI(domain)
+	org = fetchOrgNameFromOpenAI(domain)
 
 	// Update mapping and write back to file
 	mapping[domain] = org
@@ -40,7 +42,7 @@ func MapDomainToOrg(domain string) string {
 func fetchOrgNameFromOpenAI(domain string) string {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
-		fmt.Println("⚠️  OPENAI_API_KEY not set.")
+		fmt.Println("OPENAI_API_KEY not set.")
 		return "Unknown"
 	}
 
