@@ -8,62 +8,89 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 )
+
+type DomainInfo struct {
+	Organization string `json:"organization"`
+	Type         string `json:"type"`
+}
 
 const domainMapFile = "domain_map.json"
 
-func MapDomainToOrg(domain string) string {
-	// Load existing mapping
-	var mapping map[string]string = make(map[string]string)
+var domainMapLock sync.Mutex
 
-	var data []byte
+func GetOrInitDomain(domain, domainType string) {
+	// Lock for safe read/write to domain_map.json
+	domainMapLock.Lock()
+	defer domainMapLock.Unlock()
+
+	// Load existing data
+	mapping := make(map[string]DomainInfo)
 	data, err := os.ReadFile(domainMapFile)
 	if err == nil {
-		json.Unmarshal(data, &mapping)
+		_ = json.Unmarshal(data, &mapping)
 	}
 
-	// Check if domain is already present in file
-	var org string
-	if org, exists := mapping[domain]; exists {
-		return org
+	// If already exists, do nothing
+	if _, exists := mapping[domain]; exists {
+		return
 	}
 
-	// if not present then fetch new mapping
-	org = fetchOrgNameFromOpenAI(domain)
+	// Background goroutine to fetch & write mapping
+	go func(domain, domainType string) {
+		org := fetchOrgNameFromOpenAI(domain)
+		if org == "" {
+			org = "Unknown"
+		}
 
-	// Update mapping and write back to file
-	mapping[domain] = org
-	updatedData, _ := json.MarshalIndent(mapping, "", "  ")
-	os.WriteFile(domainMapFile, updatedData, 0644)
+		domainMapLock.Lock()
+		defer domainMapLock.Unlock()
 
-	return org
+		// Reload to avoid overwriting concurrent updates
+		updatedMapping := make(map[string]DomainInfo)
+		data, err := os.ReadFile(domainMapFile)
+		if err == nil {
+			_ = json.Unmarshal(data, &updatedMapping)
+		}
+
+		updatedMapping[domain] = DomainInfo{
+			Organization: org,
+			Type:         domainType,
+		}
+
+		// Write back to file
+		updatedData, _ := json.MarshalIndent(updatedMapping, "", "  ")
+		_ = os.WriteFile(domainMapFile, updatedData, 0644)
+
+		fmt.Printf("✅ Cached new domain: %s => %s (%s)\n", domain, org, domainType)
+	}(domain, domainType)
 }
 
 func fetchOrgNameFromOpenAI(domain string) string {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
-		fmt.Println("OPENAI_API_KEY not set.")
-		return "Unknown"
+		fmt.Println("⚠️  OPENAI_API_KEY not set.")
+		return ""
 	}
 
 	prompt := fmt.Sprintf("Return only the full legal organization name associated with the domain %s. No description or explanation.", domain)
 
-	requestBody, _ := json.Marshal(map[string]interface{}{
+	reqBody, _ := json.Marshal(map[string]interface{}{
 		"model":       "gpt-4o",
 		"messages":    []map[string]string{{"role": "user", "content": prompt}},
 		"max_tokens":  20,
 		"temperature": 0.2,
 	})
 
-	req, _ := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
+	req, _ := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(reqBody))
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		fmt.Println("OpenAI request failed:", err)
-		return "Unknown"
+		return ""
 	}
 	defer resp.Body.Close()
 
@@ -76,12 +103,11 @@ func fetchOrgNameFromOpenAI(domain string) string {
 	}
 
 	body, _ := io.ReadAll(resp.Body)
-	json.Unmarshal(body, &result)
+	_ = json.Unmarshal(body, &result)
 
 	if len(result.Choices) > 0 {
-		orgName := strings.TrimSpace(result.Choices[0].Message.Content)
-		return orgName
+		return strings.TrimSpace(result.Choices[0].Message.Content)
 	}
 
-	return "Unknown"
+	return ""
 }
