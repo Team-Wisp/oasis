@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+
 	// "fmt"
 	"io"
 	"log"
@@ -21,6 +22,7 @@ type VerifyResponse struct {
 	Domain       string `json:"domain"`
 	Organization string `json:"organization"`
 	IsValid      bool   `json:"isValid"`
+	Type         string `json:"type"` // "corporate"/"educational"
 }
 
 // /verify
@@ -56,12 +58,21 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Verify domain using net.LookupMX
 	isValid := service.CheckMX(domain)
 
+	domainType := service.GetDomainType(domain)
+
+	// Reject public domains right here
+	if domainType == "public" {
+		http.Error(w, "Public email domains are not allowed, only college/corporate email!!", http.StatusForbidden)
+		return
+	}
+
 	org := service.MapDomainToOrg(domain)
 
 	resp := VerifyResponse{
 		Domain:       domain,
 		Organization: org,
 		IsValid:      isValid,
+		Type:         domainType,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
