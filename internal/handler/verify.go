@@ -36,7 +36,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("📩 Email Received: %s", req.Email)
+	log.Printf("Email Received: %s", req.Email)
 
 	parts := strings.Split(req.Email, "@")
 	if len(parts) != 2 {
@@ -54,7 +54,9 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Enrich org info in background
-	service.GetOrInitDomain(domain, domainType)
+	if isValid {
+		service.GetOrInitDomain(domain, domainType)
+	}
 
 	resp := VerifyResponse{
 		Domain:  domain,
