@@ -3,54 +3,45 @@ package service
 import (
 	"crypto/rand"
 	"fmt"
-	"sync"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
-type otpEntry struct {
-	Code      string
-	ExpiresAt time.Time
-}
+const otpTTL = 5 * time.Minute
 
-var (
-	otpStore = make(map[string]otpEntry)
-	otpLock  sync.Mutex
-	otpTTL   = 5 * time.Minute
-)
-
-// GenerateAndStoreOTP creates a new OTP, stores it in memory, and returns the OTP
+// GenerateAndStoreOTP creates a secure OTP and stores it in Redis with TTL
 func GenerateAndStoreOTP(email string) (string, error) {
 	code, err := generateOTP()
 	if err != nil {
 		return "", err
 	}
 
-	otpLock.Lock()
-	defer otpLock.Unlock()
-
-	otpStore[email] = otpEntry{
-		Code:      code,
-		ExpiresAt: time.Now().Add(otpTTL),
+	key := fmt.Sprintf("otp:%s", email)
+	err = Redis.Set(Ctx, key, code, otpTTL).Err()
+	if err != nil {
+		return "", err
 	}
 
 	return code, nil
 }
 
-// VerifyOTP checks if the OTP is valid and not expired
-func VerifyOTP(email string, otp string) bool {
-	otpLock.Lock()
-	defer otpLock.Unlock()
+// VerifyOTP checks if the OTP is valid for the given email and deletes it if successful
+func VerifyOTP(email, otp string) bool {
+	key := fmt.Sprintf("otp:%s", email)
 
-	entry, exists := otpStore[email]
-	if !exists || time.Now().After(entry.ExpiresAt) {
+	storedCode, err := Redis.Get(Ctx, key).Result()
+	if err == redis.Nil || err != nil {
 		return false
 	}
 
-	// Optionally: delete the OTP after successful use
-	delete(otpStore, email)
+	if !subtleCompare(storedCode, otp) {
+		return false
+	}
 
-	// Constant-time comparison for security
-	return subtleCompare(entry.Code, otp)
+	// Delete OTP after successful use
+	Redis.Del(Ctx, key)
+	return true
 }
 
 // generateOTP creates a secure random 6-digit OTP
@@ -61,7 +52,6 @@ func generateOTP() (string, error) {
 		return "", err
 	}
 
-	// Convert to 6-digit number
 	num := (int(b[0]) << 16) | (int(b[1]) << 8) | int(b[2])
 	code := fmt.Sprintf("%06d", num%1000000)
 	return code, nil
@@ -77,17 +67,4 @@ func subtleCompare(a, b string) bool {
 		result |= int(a[i] ^ b[i])
 	}
 	return result == 0
-}
-
-// CleanupExpiredOTPs removes expired OTPs (optional for a background goroutine)
-func CleanupExpiredOTPs() {
-	otpLock.Lock()
-	defer otpLock.Unlock()
-
-	now := time.Now()
-	for email, entry := range otpStore {
-		if now.After(entry.ExpiresAt) {
-			delete(otpStore, email)
-		}
-	}
 }

@@ -8,10 +8,10 @@ import (
 
 // Simple SMTP-based email sender
 func SendEmail(to string, subject string, body string) error {
-	from := os.Getenv("EMAIL_SENDER")       // your email
-	password := os.Getenv("EMAIL_PASSWORD") // app password / SMTP password
-	smtpHost := os.Getenv("SMTP_HOST")      // e.g., smtp.gmail.com
-	smtpPort := os.Getenv("SMTP_PORT")      // e.g., 587
+	from := os.Getenv("EMAIL_SENDER")
+	password := os.Getenv("EMAIL_PASSWORD")
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort := os.Getenv("SMTP_PORT")
 
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
