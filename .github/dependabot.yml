@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/" # location of package manifest 
     schedule:
-      interval: "weekly"  
+      interval: "daily"  
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
