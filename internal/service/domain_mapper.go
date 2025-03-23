@@ -87,7 +87,7 @@ func fetchOrgNameFromOpenAI(domain string) string {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req) // this is like await => wait until this call is done
 	if err != nil {
 		fmt.Println("OpenAI request failed:", err)
 		return ""
