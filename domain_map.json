@@ -1,0 +1,14 @@
+{
+  "learner.manipal.edu": {
+    "organization": "Manipal Academy of Higher Education",
+    "type": "educational"
+  },
+  "milestoneinternet.com": {
+    "organization": "Milestone Inc.",
+    "type": "corporate"
+  },
+  "solarwinds.com": {
+    "organization": "SolarWinds Corporation",
+    "type": "corporate"
+  }
+}
