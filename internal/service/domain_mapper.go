@@ -15,8 +15,8 @@ import (
 
 type DomainInfo struct {
 	Domain    string    `bson:"domain"`
-	Name      string    `bson:"name"`
-	Type      string    `bson:"type"`
+	Org_Name  string    `bson:"org_name"`
+	Org_Type  string    `bson:"org_type"`
 	CreatedAt time.Time `bson:"createdAt"`
 }
 
@@ -46,16 +46,16 @@ func GetOrInitDomain(domain, domainType string) {
 		}
 
 		// If not found, fetch using OpenAI
-		org := fetchOrgNameFromOpenAI(domain)
-		if org == "" {
-			org = "Unknown"
+		org_name := fetchOrgNameFromOpenAI(domain)
+		if org_name == "" {
+			org_name = "Unknown"
 		}
 
 		// Insert into MongoDB
 		newDomain := DomainInfo{
 			Domain:    domain,
-			Name:      org,
-			Type:      domainType,
+			Org_Name:  org_name,
+			Org_Type:  domainType,
 			CreatedAt: time.Now(),
 		}
 
@@ -65,7 +65,7 @@ func GetOrInitDomain(domain, domainType string) {
 		} else {
 			sanitizedDomain := strings.ReplaceAll(domain, "\n", "")
 			sanitizedDomain = strings.ReplaceAll(sanitizedDomain, "\r", "")
-			fmt.Printf("Cached new domain in MongoDB: %s => %s (%s)\n", sanitizedDomain, org, domainType)
+			fmt.Printf("Cached new domain in MongoDB: %s => %s (%s)\n", sanitizedDomain, org_name, domainType)
 		}
 	}(domain, domainType)
 }
@@ -98,16 +98,22 @@ func fetchOrgNameFromOpenAI(domain string) string {
 	}
 	defer resp.Body.Close()
 
+	// Defines a Go struct that matches the structure of the JSON response from OpenAI's API.
 	var result struct {
-		Choices []struct {
+		Choices []struct { // Choices is an array of objects that contain the message. In this case we only care about the first one. As default it is 1 but can be more.
 			Message struct {
 				Content string `json:"content"`
 			} `json:"message"`
 		} `json:"choices"`
 	}
 
+	fmt.Println("OpenAI response status:", resp.StatusCode)
+
 	body, _ := io.ReadAll(resp.Body)
-	_ = json.Unmarshal(body, &result)
+	if err := json.Unmarshal(body, &result); err != nil {
+		fmt.Println("Failed to parse OpenAI response:", err)
+		return ""
+	}
 
 	if len(result.Choices) > 0 {
 		return strings.TrimSpace(result.Choices[0].Message.Content)
