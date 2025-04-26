@@ -4,7 +4,7 @@ import "strings"
 
 func GetDomainType(domain string) string {
 	publicEmailDomains := map[string]bool{
-		"gmail.com":      true,
+		// "gmail.com":      true,
 		"yahoo.com":      true,
 		"outlook.com":    true,
 		"hotmail.com":    true,

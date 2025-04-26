@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
@@ -11,7 +10,7 @@ import (
 )
 
 type VerifyRequest struct {
-	Email string `json:"email"`
+	Domain string `json:"domain"`
 }
 
 type VerifyResponse struct {
@@ -36,14 +35,12 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Email Received: %s", req.Email)
+	domain := strings.ToLower(strings.TrimSpace(req.Domain))
 
-	parts := strings.Split(req.Email, "@")
-	if len(parts) != 2 {
-		http.Error(w, "Invalid email format", http.StatusBadRequest)
+	if domain == "" {
+		http.Error(w, "Domain is required", http.StatusBadRequest)
 		return
 	}
-	domain := parts[1]
 
 	isValid := service.CheckMX(domain)
 	domainType := service.GetDomainType(domain)
