@@ -31,7 +31,9 @@ func GetOrInitDomain(domain, domainType string) {
 		var domainRegex = regexp.MustCompile(`^[a-zA-Z0-9.-]+$`)
 
 		if !domainRegex.MatchString(domain) {
-			fmt.Println("Invalid domain format:", domain)
+			sanitizedDomain := strings.ReplaceAll(domain, "\n", "")
+			sanitizedDomain = strings.ReplaceAll(sanitizedDomain, "\r", "")
+			fmt.Println("Invalid domain format:", sanitizedDomain)
 			return
 		}
 
