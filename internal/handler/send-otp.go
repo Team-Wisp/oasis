@@ -1,5 +1,7 @@
 package handler
 
+// Handler for incoming HTTP POST req (email)
+
 import (
 	"encoding/json"
 	"fmt"

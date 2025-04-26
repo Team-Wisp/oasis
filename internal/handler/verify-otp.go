@@ -1,5 +1,7 @@
 package handler
 
+// Handler for incoming HTTP POST req (email & OTP)
+
 import (
 	"encoding/json"
 	"io"

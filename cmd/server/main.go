@@ -19,7 +19,7 @@ func main() {
 	service.InitRedis()
 	service.InitMongo()
 
-	http.HandleFunc("/verify", handler.VerifyHandler)        // server/verfiy
+	http.HandleFunc("/verify-domain", handler.VerifyHandler) // server/verfiy
 	http.HandleFunc("/send-otp", handler.SendOTPHandler)     // server/send-otp
 	http.HandleFunc("/verify-otp", handler.VerifyOTPHandler) // server/verify-otp
 
