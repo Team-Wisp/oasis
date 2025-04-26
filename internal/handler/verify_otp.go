@@ -9,8 +9,8 @@ import (
 )
 
 type VerifyOTPRequest struct {
-	Email string `json:"email"`
-	OTP   string `json:"otp"`
+	EmailHash string `json:"email"`
+	OTP       string `json:"otp"`
 }
 
 type VerifyOTPResponse struct {
@@ -34,7 +34,7 @@ func VerifyOTPHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isValid := service.VerifyOTP(req.Email, req.OTP)
+	isValid := service.VerifyOTP(req.EmailHash, req.OTP)
 
 	resp := VerifyOTPResponse{
 		Verified: isValid,
