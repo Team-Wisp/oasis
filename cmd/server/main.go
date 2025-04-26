@@ -15,8 +15,9 @@ func main() {
 	if err != nil {
 		log.Println("⚠️  No .env file found or failed to load")
 	}
-	//connect to redis cache
+	//connect to db
 	service.InitRedis()
+	service.InitMongo()
 
 	http.HandleFunc("/verify", handler.VerifyHandler)        // server/verfiy
 	http.HandleFunc("/send-otp", handler.SendOTPHandler)     // server/send-otp
