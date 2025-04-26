@@ -36,7 +36,7 @@ func VerifyOTPHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isValid := service.VerifyOTP(req.EmailHash, req.OTP)
+	isValid := service.VerifyOTPWithRateLimit(req.EmailHash, req.OTP)
 
 	resp := VerifyOTPResponse{
 		Verified: isValid,

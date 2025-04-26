@@ -2,7 +2,10 @@ module github.com/Team-Wisp/oasis
 
 go 1.23.6
 
-require github.com/redis/go-redis/v9 v9.7.3
+require (
+	github.com/redis/go-redis/v9 v9.7.3
+	github.com/sirupsen/logrus v1.9.3
+)
 
 require (
 	github.com/golang/snappy v1.0.0 // indirect
@@ -14,6 +17,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
 )
 
