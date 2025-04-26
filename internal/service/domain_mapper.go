@@ -2,72 +2,63 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strings"
-	"sync"
+	"time"
 )
 
 type DomainInfo struct {
-	Organization string `json:"organization"`
-	Type         string `json:"type"`
+	Domain    string    `bson:"domain"`
+	Name      string    `bson:"name"`
+	Type      string    `bson:"type"`
+	CreatedAt time.Time `bson:"createdAt"`
 }
 
-const domainMapFile = "domain_map.json"
-
-var domainMapLock sync.Mutex
-
 func GetOrInitDomain(domain, domainType string) {
-	// Lock for safe read/write to domain_map.json
-	domainMapLock.Lock()
-	defer domainMapLock.Unlock()
-
-	// Load existing data
-	mapping := make(map[string]DomainInfo)
-	data, err := os.ReadFile(domainMapFile)
-	if err == nil {
-		_ = json.Unmarshal(data, &mapping)
-	}
-
-	// If already exists, do nothing
-	if _, exists := mapping[domain]; exists {
-		return
-	}
-
-	// Background goroutine to fetch & write mapping
 	go func(domain, domainType string) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		collection := MongoDatabase.Collection("organizations")
+
+		// Check if domain already exists
+		var existing DomainInfo
+		err := collection.FindOne(ctx, map[string]interface{}{"domain": domain}).Decode(&existing)
+		if err == nil {
+			// Already exists, no need to fetch
+			return
+		}
+
+		// If not found, fetch using OpenAI
 		org := fetchOrgNameFromOpenAI(domain)
 		if org == "" {
 			org = "Unknown"
 		}
 
-		domainMapLock.Lock()
-		defer domainMapLock.Unlock()
-
-		// Reload to avoid overwriting concurrent updates
-		updatedMapping := make(map[string]DomainInfo)
-		data, err := os.ReadFile(domainMapFile)
-		if err == nil {
-			_ = json.Unmarshal(data, &updatedMapping)
+		// Insert into MongoDB
+		newDomain := DomainInfo{
+			Domain:    domain,
+			Name:      org,
+			Type:      domainType,
+			CreatedAt: time.Now(),
 		}
 
-		updatedMapping[domain] = DomainInfo{
-			Organization: org,
-			Type:         domainType,
+		_, err = collection.InsertOne(ctx, newDomain)
+		if err != nil {
+			fmt.Println("Failed to insert new domain info:", err)
+		} else {
+			fmt.Printf("Cached new domain in MongoDB: %s => %s (%s)\n", domain, org, domainType)
 		}
-
-		// Write back to file
-		updatedData, _ := json.MarshalIndent(updatedMapping, "", "  ")
-		_ = os.WriteFile(domainMapFile, updatedData, 0644)
-
-		fmt.Printf("✅ Cached new domain: %s => %s (%s)\n", domain, org, domainType)
 	}(domain, domainType)
 }
 
 func fetchOrgNameFromOpenAI(domain string) string {
+	fmt.Println("Making OpenAI Request for new Domain Mapping")
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		fmt.Println("⚠️  OPENAI_API_KEY not set.")
