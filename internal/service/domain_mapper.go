@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -25,6 +26,14 @@ func GetOrInitDomain(domain, domainType string) {
 		defer cancel()
 
 		collection := MongoDatabase.Collection("organizations")
+
+		// Sanitize domain input
+		var domainRegex = regexp.MustCompile(`^[a-zA-Z0-9.-]+$`)
+
+		if !domainRegex.MatchString(domain) {
+			fmt.Println("Invalid domain format:", domain)
+			return
+		}
 
 		// Check if domain already exists
 		var existing DomainInfo
