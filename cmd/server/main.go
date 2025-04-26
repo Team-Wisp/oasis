@@ -13,7 +13,7 @@ func main() {
 	// Load environment variables from .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("⚠️  No .env file found or failed to load")
+		log.Println("No .env file found or failed to load")
 	}
 	//connect to db
 	service.InitRedis()

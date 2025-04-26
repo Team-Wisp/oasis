@@ -12,7 +12,6 @@ import (
 
 var MongoClient *mongo.Client
 var MongoDatabase *mongo.Database
-var MongoCtx = context.Background()
 
 func InitMongo() {
 	mongoURI := os.Getenv("MONGO_URI")
@@ -21,17 +20,12 @@ func InitMongo() {
 	}
 
 	clientOptions := options.Client().ApplyURI(mongoURI)
-	client, err := mongo.NewClient(clientOptions)
-	if err != nil {
-		log.Fatal("Failed to create MongoDB client:", err)
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	err = client.Connect(ctx)
+	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatal("Failed to connect to MongoDB:", err)
+		log.Fatal("Failed to create MongoDB client:", err)
 	}
 
 	MongoClient = client
