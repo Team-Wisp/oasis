@@ -1,4 +1,8 @@
 {
+  "gmail.com": {
+    "organization": "Google LLC",
+    "type": "corporate"
+  },
   "learner.manipal.edu": {
     "organization": "Manipal Academy of Higher Education",
     "type": "educational"
