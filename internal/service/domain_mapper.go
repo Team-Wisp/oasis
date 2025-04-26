@@ -52,7 +52,9 @@ func GetOrInitDomain(domain, domainType string) {
 		if err != nil {
 			fmt.Println("Failed to insert new domain info:", err)
 		} else {
-			fmt.Printf("Cached new domain in MongoDB: %s => %s (%s)\n", domain, org, domainType)
+			sanitizedDomain := strings.ReplaceAll(domain, "\n", "")
+			sanitizedDomain = strings.ReplaceAll(sanitizedDomain, "\r", "")
+			fmt.Printf("Cached new domain in MongoDB: %s => %s (%s)\n", sanitizedDomain, org, domainType)
 		}
 	}(domain, domainType)
 }
