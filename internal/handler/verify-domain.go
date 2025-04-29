@@ -1,5 +1,6 @@
 package handler
 
+// Handler for incoming HTTP POST req (email domains)
 import (
 	"encoding/json"
 	"io"

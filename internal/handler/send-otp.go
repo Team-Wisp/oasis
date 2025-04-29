@@ -1,5 +1,7 @@
 package handler
 
+// Handler for incoming HTTP POST req (email)
+
 import (
 	"encoding/json"
 	"fmt"
@@ -42,7 +44,7 @@ func SendOTPHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Email content
-	subject := "Your TeamWisp Verification Code"
+	subject := "Your Wisp Verification Code"
 	bodyText := fmt.Sprintf(`Hi,
 
 Your One-Time Password (OTP) is: %s
