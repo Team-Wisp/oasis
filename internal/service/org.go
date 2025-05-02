@@ -25,7 +25,6 @@ func getOrgCollection() *mongo.Collection {
 
 func LookupOrg(domain string) (*Org, error) {
 	filter := bson.M{"domain": domain}
-	log.Printf("filter %v", filter)
 	var org Org
 	log.Printf("Org: %v", org)
 	err := getOrgCollection().FindOne(context.TODO(), filter).Decode(&org)

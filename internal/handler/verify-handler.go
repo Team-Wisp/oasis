@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/Team-Wisp/oasis/internal/service"
@@ -51,6 +50,5 @@ func VerifyLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("✅ JWT issued for:", req.Email)
 	json.NewEncoder(w).Encode(LoginResponse{Token: token})
 }
