@@ -33,6 +33,11 @@ func VerifyLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !service.IsValidEmailHash(req.Email) {
+		http.Error(w, "Invalid email format", http.StatusBadRequest)
+		return
+	}
+
 	user, err := service.GetUserByEmailHash(req.Email)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)

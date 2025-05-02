@@ -53,3 +53,17 @@ func GetUserByEmailHash(emailHash string) (*User, error) {
 func CheckPassword(hashed string, inputHash string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(inputHash)) == nil
 }
+
+func IsValidEmailHash(emailHash string) bool {
+	// Example validation: Ensure the hash is a fixed-length alphanumeric string
+	const hashLength = 64 // Adjust based on the actual hash length
+	if len(emailHash) != hashLength {
+		return false
+	}
+	for _, char := range emailHash {
+		if !((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9')) {
+			return false
+		}
+	}
+	return true
+}
