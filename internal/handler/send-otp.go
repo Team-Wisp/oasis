@@ -5,8 +5,8 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"regexp"
 
 	"github.com/Team-Wisp/oasis/internal/service"
 )
@@ -19,6 +19,12 @@ type SendOTPResponse struct {
 	Message string `json:"message"`
 }
 
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+
+func isValidEmail(email string) bool {
+	return emailRegex.MatchString(email)
+}
+
 func SendOTPHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST allowed", http.StatusMethodNotAllowed)
@@ -26,42 +32,32 @@ func SendOTPHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req SendOTPRequest
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Could not read request body", http.StatusBadRequest)
-		return
-	}
-	if err := json.Unmarshal(body, &req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
 		return
 	}
+	if req.Email == "" || !isValidEmail(req.Email) {
+		http.Error(w, "Invalid email address", http.StatusBadRequest)
+		return
+	}
 
-	// Generate and store OTP
+	// Optional: Rate limiting here
+	// if blocked := service.CheckAndThrottle(req.Email); blocked { ... }
+
 	otp, err := service.GenerateAndStoreOTP(req.Email)
 	if err != nil {
 		http.Error(w, "Failed to generate OTP", http.StatusInternalServerError)
 		return
 	}
 
-	// Email content
 	subject := "Your Wisp Verification Code"
-	bodyText := fmt.Sprintf(`Hi,
+	bodyText := fmt.Sprintf("Hi,\n\nYour OTP is: %s\nIt expires in 5 minutes.\n\n– TeamWisp", otp)
 
-Your One-Time Password (OTP) is: %s
-
-It will expire in 5 minutes.
-
-– TeamWisp`, otp)
-
-	// Send email
 	if err := service.SendEmail(req.Email, subject, bodyText); err != nil {
 		http.Error(w, "Failed to send OTP email", http.StatusInternalServerError)
 		return
 	}
 
-	// Respond with success
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(SendOTPResponse{
-		Message: "OTP sent to your email.",
-	})
+	json.NewEncoder(w).Encode(SendOTPResponse{Message: "OTP sent to your email."})
 }
