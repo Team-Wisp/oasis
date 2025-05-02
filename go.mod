@@ -3,7 +3,7 @@ module github.com/Team-Wisp/oasis
 go 1.23.6
 
 require (
-	github.com/redis/go-redis/v9 v9.7.3
+	github.com/redis/go-redis/v9 v9.8.0
 	github.com/sirupsen/logrus v1.9.3
 )
 
