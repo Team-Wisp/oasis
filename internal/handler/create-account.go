@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+	"regexp"
 
 	"github.com/Team-Wisp/oasis/internal/service"
 )
@@ -46,6 +47,12 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate domain
+	if !isValidDomain(req.Domain) {
+		http.Error(w, "Invalid domain format", http.StatusBadRequest)
+		return
+	}
+
 	// Get organization info
 	org, err := service.LookupOrg(req.Domain)
 	if err != nil {
@@ -75,4 +82,10 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(CreateAccountResponse{Message: "User created successfully"})
+}
+
+func isValidDomain(domain string) bool {
+	// Regular expression to validate domain names
+	var domainRegex = regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`)
+	return domainRegex.MatchString(domain)
 }
