@@ -28,7 +28,7 @@ func GetDomainType(domain string) string {
 
 	for _, suffix := range eduSuffixes {
 		if strings.Contains(domain, suffix) {
-			return "educational"
+			return "college"
 		}
 	}
 

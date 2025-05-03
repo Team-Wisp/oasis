@@ -2,9 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-	"time"
 	"regexp"
+	"time"
 
 	"github.com/Team-Wisp/oasis/internal/service"
 )
@@ -77,6 +78,7 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := service.SaveUser(user); err != nil {
+		log.Printf("SaveUser failed: %+v", err)
 		http.Error(w, "Failed to create user", http.StatusInternalServerError)
 		return
 	}
