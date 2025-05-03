@@ -11,7 +11,7 @@ import (
 )
 
 type VerifyRequest struct {
-	Domain string `json:"domain"`
+	Email string `json:"email"`
 }
 
 type VerifyResponse struct {
@@ -36,7 +36,12 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domain := strings.ToLower(strings.TrimSpace(req.Domain))
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	if email == "" || !strings.Contains(email, "@") {
+		http.Error(w, "Valid email is required", http.StatusBadRequest)
+		return
+	}
+	domain := strings.Split(email, "@")[1]
 
 	if domain == "" {
 		http.Error(w, "Domain is required", http.StatusBadRequest)

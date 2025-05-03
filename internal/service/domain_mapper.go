@@ -29,7 +29,7 @@ func GetOrInitDomain(domain, domainType string) {
 			return
 		}
 
-		url := os.Getenv("DESERT_URI") // internal Desert service URL
+		url := os.Getenv("DESERT_ENRICH_URI") // internal Desert service URL
 		if url == "" {
 			fmt.Println("DESERT_URL is not set in env variables.")
 			return
