@@ -29,6 +29,6 @@ func InitMongo() {
 	}
 
 	MongoClient = client
-	MongoDatabase = client.Database(os.Getenv("MONGO_DB_NAME")) // e.g., "oasis"
+	MongoDatabase = client.Database(os.Getenv("MONGO_DB_NAME"))
 	log.Println("MongoDB connected")
 }

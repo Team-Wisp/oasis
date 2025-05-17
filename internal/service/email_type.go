@@ -4,7 +4,7 @@ import "strings"
 
 func GetDomainType(domain string) string {
 	publicEmailDomains := map[string]bool{
-		"gmail.com":      true,
+		// "gmail.com":      true,
 		"yahoo.com":      true,
 		"outlook.com":    true,
 		"hotmail.com":    true,
@@ -28,7 +28,7 @@ func GetDomainType(domain string) string {
 
 	for _, suffix := range eduSuffixes {
 		if strings.Contains(domain, suffix) {
-			return "educational"
+			return "college"
 		}
 	}
 

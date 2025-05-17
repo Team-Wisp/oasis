@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TeamWisp Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="bg-neutral-900 text-white flex items-center justify-center min-h-screen">
+  <div class="w-full max-w-md bg-neutral-800 p-6 rounded-xl shadow-xl space-y-6">
+    <h2 class="text-2xl font-semibold text-center">Login to TeamWisp</h2>
+    <input id="email" type="email" placeholder="Email"
+      class="w-full px-4 py-2 bg-neutral-700 rounded-lg text-white placeholder-neutral-400 border border-neutral-600 focus:ring-2 focus:ring-white focus:outline-none" />
+    <input id="password" type="password" placeholder="Password"
+      class="w-full mt-2 px-4 py-2 bg-neutral-700 rounded-lg text-white placeholder-neutral-400 border border-neutral-600 focus:ring-2 focus:ring-white focus:outline-none" />
+    <button id="login" class="w-full mt-4 bg-white text-black py-2 rounded-lg hover:bg-gray-300 transition">Login</button>
+    <div id="feedback" class="text-sm text-center mt-2 text-red-400 hidden"></div>
+  </div>
+
+  <script src="/static/login.js"></script>
+</body>
+</html>
