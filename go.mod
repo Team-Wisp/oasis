@@ -5,7 +5,7 @@ go 1.23.6
 require (
 	github.com/redis/go-redis/v9 v9.9.0
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/crypto v0.37.0
+	golang.org/x/crypto v0.39.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 )
 
@@ -17,9 +17,9 @@ require (
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 )
 
 require (
