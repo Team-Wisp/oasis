@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -26,7 +25,6 @@ func getOrgCollection() *mongo.Collection {
 func LookupOrg(domain string) (*Org, error) {
 	filter := bson.M{"domain": domain}
 	var org Org
-	log.Printf("Org: %v", org)
 	err := getOrgCollection().FindOne(context.TODO(), filter).Decode(&org)
 	if err != nil {
 		return nil, err

@@ -57,8 +57,17 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	// Get organization info
 	org, err := service.LookupOrg(req.Domain)
 	if err != nil {
-		http.Error(w, "Could not find organization info", http.StatusBadRequest)
-		return
+		// trigger enrichment as a fallback (idempotent) (incase there is no entry in db)
+		service.GetOrInitDomain(req.Domain, service.GetDomainType(req.Domain))
+
+		// short, bounded poll so UX isn't blocked forever
+		deadline := time.Now().Add(2 * time.Second)
+		for time.Now().Before(deadline) {
+			if org, err = service.LookupOrg(req.Domain); err == nil {
+				break
+			}
+			time.Sleep(150 * time.Millisecond)
+		}
 	}
 
 	// Final password hash (bcrypt of client-side hashed password)
