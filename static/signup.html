@@ -1,39 +1,102 @@
+<!-- static/signup.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TeamWisp Sign Up</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeamWisp — Sign up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind config to use Inter -->
+  <script>
+    window.tailwind = {
+      config: {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter","ui-sans-serif","system-ui","Segoe UI","Roboto","Helvetica","Arial","Apple Color Emoji","Segoe UI Emoji"]
+            }
+          }
+        }
+      }
+    }
+  </script>
   <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body class="bg-neutral-900 text-white flex items-center justify-center min-h-screen">
-  <div class="w-full max-w-md bg-neutral-800 p-6 rounded-xl shadow-xl space-y-6">
-    <h2 class="text-2xl font-semibold text-center">Sign Up for TeamWisp</h2>
+<body class="bg-neutral-950 text-neutral-100 font-sans antialiased flex items-center justify-center min-h-screen">
+  <div class="w-full max-w-md p-6 space-y-5">
+    <div class="space-y-1 text-center">
+      <h1 class="text-xl font-semibold tracking-tight">Create your account</h1>
+      <p class="text-sm text-neutral-400">Work or college emails only</p>
+    </div>
 
     <div id="feedback" class="text-sm text-center text-green-400 font-medium hidden"></div>
 
     <!-- Step 1: Email -->
-    <div id="step-email">
-      <input id="email" type="email" placeholder="Work/College Email" required
-        class="w-full px-4 py-2 bg-neutral-700 rounded-lg placeholder-neutral-400 text-white border border-neutral-600 focus:ring-2 focus:ring-white focus:outline-none" />
-      <button id="send-otp" class="w-full mt-4 bg-white text-black py-2 rounded-lg hover:bg-gray-300 transition">Send OTP</button>
+    <div id="step-email" class="space-y-3">
+      <label class="sr-only" for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        placeholder="you@work.com"
+        required
+        class="w-full px-3 py-2 bg-neutral-900 rounded-lg text-neutral-100 placeholder-neutral-500 border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-200/40"
+      />
+      <button
+        id="send-otp"
+        class="w-full mt-2 bg-neutral-100 text-neutral-900 font-medium py-2 rounded-lg hover:bg-white transition"
+      >
+        Send OTP
+      </button>
     </div>
 
     <!-- Step 2: OTP -->
-    <div id="step-otp" class="hidden">
-      <input id="otp" type="text" maxlength="6" placeholder="Enter OTP"
-        class="w-full px-4 py-2 bg-neutral-700 rounded-lg placeholder-neutral-400 text-white border border-neutral-600 focus:ring-2 focus:ring-white focus:outline-none" />
-      <button id="verify-otp" class="w-full mt-4 bg-white text-black py-2 rounded-lg hover:bg-gray-300 transition">Verify OTP</button>
+    <div id="step-otp" class="hidden space-y-3">
+      <label class="sr-only" for="otp">OTP</label>
+      <input
+        id="otp"
+        type="text"
+        maxlength="6"
+        inputmode="numeric"
+        placeholder="6-digit code"
+        class="w-full px-3 py-2 bg-neutral-900 rounded-lg text-neutral-100 placeholder-neutral-500 border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-200/40"
+      />
+      <button
+        id="verify-otp"
+        class="w-full mt-2 bg-neutral-100 text-neutral-900 font-medium py-2 rounded-lg hover:bg-white transition"
+      >
+        Verify OTP
+      </button>
     </div>
 
     <!-- Step 3: Password -->
-    <div id="step-password" class="hidden">
-      <input id="password" type="password" placeholder="Create Password"
-        class="w-full px-4 py-2 bg-neutral-700 rounded-lg placeholder-neutral-400 text-white border border-neutral-600 focus:ring-2 focus:ring-white focus:outline-none mb-2" />
-      <input id="confirm" type="password" placeholder="Confirm Password"
-        class="w-full px-4 py-2 bg-neutral-700 rounded-lg placeholder-neutral-400 text-white border border-neutral-600 focus:ring-2 focus:ring-white focus:outline-none" />
-      <button id="create-account" class="w-full mt-4 bg-white text-black py-2 rounded-lg hover:bg-gray-300 transition">Create Account</button>
+    <div id="step-password" class="hidden space-y-3">
+      <label class="sr-only" for="password">Create Password</label>
+      <input
+        id="password"
+        type="password"
+        placeholder="Create password"
+        class="w-full px-3 py-2 bg-neutral-900 rounded-lg text-neutral-100 placeholder-neutral-500 border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-200/40"
+      />
+      <label class="sr-only" for="confirm">Confirm Password</label>
+      <input
+        id="confirm"
+        type="password"
+        placeholder="Confirm password"
+        class="w-full px-3 py-2 bg-neutral-900 rounded-lg text-neutral-100 placeholder-neutral-500 border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-200/40"
+      />
+      <button
+        id="create-account"
+        class="w-full mt-2 bg-neutral-100 text-neutral-900 font-medium py-2 rounded-lg hover:bg-white transition"
+      >
+        Create account
+      </button>
     </div>
   </div>
 
