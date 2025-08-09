@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -86,11 +87,24 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now(),
 	}
 
-	if err := service.SaveUser(user); err != nil {
+	userID, err := service.SaveUser(user)
+	if err != nil {
 		log.Printf("SaveUser failed: %+v", err)
 		http.Error(w, "Failed to create user", http.StatusInternalServerError)
 		return
 	}
+
+	// Create or fetch membership (user ↔ org)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	mid, handle, err := service.UpsertMembership(ctx, userID, org.ID)
+	if err != nil {
+		log.Printf("UpsertMembership failed: %+v", err)
+		// not fatal for account creation, but good to surface
+		http.Error(w, "Failed to link org membership", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("membership created: %s handle=%s", mid.Hex(), handle)
 
 	json.NewEncoder(w).Encode(CreateAccountResponse{Message: "User created successfully"})
 }
