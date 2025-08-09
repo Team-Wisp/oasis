@@ -41,13 +41,17 @@ func VerifyLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := service.GetUserByEmailHash(req.Email)
-	if err != nil { /* ... */
+	if err != nil {
+		http.Error(w, "Email Does not exist", http.StatusBadRequest)
+		return
 	}
-	if !service.CheckPassword(user.Password, req.Password) { /* ... */
+	if !service.CheckPassword(user.Password, req.Password) {
+		http.Error(w, "Wrong password", http.StatusBadRequest)
+		return
 	}
 
-	// Resolve org by stored slug (MVP)
-	org, err := service.LookupOrgBySlug(user.OrgSlug)
+	// Resolve org by stored slug
+	org, err := service.LookupOrgBySlug(user.Slug)
 	if err != nil {
 		http.Error(w, "Organization not found", http.StatusUnauthorized)
 		return
@@ -62,7 +66,7 @@ func VerifyLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := service.GenerateJWT(user.ID.Hex(), user.OrgSlug, user.OrgType, mid.Hex())
+	token, err := service.GenerateJWT(user.ID.Hex(), user.Slug, user.OrgType, mid.Hex())
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 		return

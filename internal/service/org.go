@@ -14,7 +14,7 @@ type Org struct {
 	Domain      string             `bson:"domain"`
 	OrgName     string             `bson:"name"`
 	OrgType     string             `bson:"type"`
-	OrgSlug     string             `bson:"org_slug"`
+	Slug        string             `bson:"slug"`
 	CreatedAt   time.Time          `bson:"createdAt"`
 	LogoURL     string             `bson:"logoUrl,omitempty"`
 	Description string             `bson:"description,omitempty"`
@@ -35,7 +35,7 @@ func LookupOrg(domain string) (*Org, error) {
 	return &org, nil
 }
 func LookupOrgBySlug(slug string) (*Org, error) {
-	filter := bson.M{"org_slug": slug}
+	filter := bson.M{"slug": slug}
 	var org Org
 	err := getOrgCollection().FindOne(context.TODO(), filter).Decode(&org)
 	if err != nil {

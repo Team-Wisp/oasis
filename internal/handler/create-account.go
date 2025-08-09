@@ -78,11 +78,11 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Store user
+	// Store user with only the required fields
 	user := service.User{
 		EmailHash: req.Email,
 		Password:  bcryptHash,
-		OrgSlug:   org.OrgSlug,
+		Slug:      org.Slug,
 		OrgType:   org.OrgType,
 		CreatedAt: time.Now(),
 	}
@@ -97,14 +97,14 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	// Create or fetch membership (user ↔ org)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	mid, handle, err := service.UpsertMembership(ctx, userID, org.ID)
+	_, _, err = service.UpsertMembership(ctx, userID, org.ID)
 	if err != nil {
 		log.Printf("UpsertMembership failed: %+v", err)
 		// not fatal for account creation, but good to surface
 		http.Error(w, "Failed to link org membership", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("membership created: %s handle=%s", mid.Hex(), handle)
+	// Membership created successfully (logging removed for security reasons)
 
 	json.NewEncoder(w).Encode(CreateAccountResponse{Message: "User created successfully"})
 }

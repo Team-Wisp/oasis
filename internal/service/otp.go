@@ -49,7 +49,6 @@ func VerifyOTPWithRateLimit(hashedEmail, otp string) bool {
 	failedAttempts, _ := Redis.Get(Ctx, failedAttemptsKey).Int()
 	if failedAttempts >= maxFailedAttempts {
 		logger.WithFields(logrus.Fields{
-			"hashedEmail":    hashedEmail,
 			"failedAttempts": failedAttempts,
 			"event":          "rate_limit_block",
 		}).Warn("Too many failed OTP attempts. User is blocked.")
@@ -61,26 +60,23 @@ func VerifyOTPWithRateLimit(hashedEmail, otp string) bool {
 	storedCode, err := Redis.Get(Ctx, key).Result()
 	if err == redis.Nil {
 		logger.WithFields(logrus.Fields{
-			"hashedEmail": hashedEmail,
-			"event":       "otp_verification_failed",
-			"reason":      "OTP not found or expired",
+			"event":  "otp_verification_failed",
+			"reason": "OTP not found or expired",
 		}).Warn("Failed OTP verification")
 		Redis.Incr(Ctx, failedAttemptsKey)                  // Increment failed attempts
 		Redis.Expire(Ctx, failedAttemptsKey, blockDuration) // Set TTL for the block
 		return false
 	} else if err != nil {
 		logger.WithFields(logrus.Fields{
-			"hashedEmail": hashedEmail,
-			"event":       "redis_error",
-			"error":       err.Error(),
+			"event": "redis_error",
+			"error": err.Error(),
 		}).Error("Redis error during OTP verification")
 		return false
 	}
 	if !subtleCompare(storedCode, otp) {
 		logger.WithFields(logrus.Fields{
-			"hashedEmail": hashedEmail,
-			"event":       "otp_verification_failed",
-			"reason":      "Invalid OTP",
+			"event":  "otp_verification_failed",
+			"reason": "Invalid OTP",
 		}).Warn("Failed OTP verification")
 		Redis.Incr(Ctx, failedAttemptsKey)                  // Increment failed attempts
 		Redis.Expire(Ctx, failedAttemptsKey, blockDuration) // Set TTL for the block
@@ -88,8 +84,7 @@ func VerifyOTPWithRateLimit(hashedEmail, otp string) bool {
 	}
 
 	logger.WithFields(logrus.Fields{
-		"hashedEmail": hashedEmail,
-		"event":       "otp_verification_success",
+		"event": "otp_verification_success",
 	}).Info("OTP verified successfully")
 
 	// Delete OTP and reset failed attempts on success

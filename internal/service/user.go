@@ -19,7 +19,7 @@ type User struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	EmailHash string             `bson:"emailHash"`
 	Password  string             `bson:"password"` // bcrypt hash
-	OrgSlug   string             `bson:"org"`
+	Slug      string             `bson:"org"`
 	OrgType   string             `bson:"orgType"`
 	CreatedAt time.Time          `bson:"createdAt"`
 }
