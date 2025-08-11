@@ -8,7 +8,7 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 )
 
-func GenerateJWT(userIDHex, orgSlug, orgType, membershipId string) (string, error) {
+func GenerateJWT(orgSlug, orgType, membershipId string) (string, error) {
 	var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 	signer, err := jose.NewSigner(jose.SigningKey{
 		Algorithm: jose.HS256,
@@ -20,7 +20,6 @@ func GenerateJWT(userIDHex, orgSlug, orgType, membershipId string) (string, erro
 
 	now := time.Now().Unix()
 	claims := map[string]interface{}{
-		"sub":     userIDHex,
 		"org":     orgSlug,
 		"orgType": orgType,
 		"mid":     membershipId,

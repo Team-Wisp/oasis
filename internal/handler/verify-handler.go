@@ -66,7 +66,7 @@ func VerifyLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := service.GenerateJWT(user.ID.Hex(), user.Slug, user.OrgType, mid.Hex())
+	token, err := service.GenerateJWT(user.Slug, user.OrgType, mid.Hex())
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 		return
