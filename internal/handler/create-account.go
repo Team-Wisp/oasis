@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -57,8 +58,17 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	// Get organization info
 	org, err := service.LookupOrg(req.Domain)
 	if err != nil {
-		http.Error(w, "Could not find organization info", http.StatusBadRequest)
-		return
+		// trigger enrichment as a fallback (idempotent) (incase there is no entry in db)
+		service.GetOrInitDomain(req.Domain, service.GetDomainType(req.Domain))
+
+		// short, bounded poll so UX isn't blocked forever
+		deadline := time.Now().Add(2 * time.Second)
+		for time.Now().Before(deadline) {
+			if org, err = service.LookupOrg(req.Domain); err == nil {
+				break
+			}
+			time.Sleep(150 * time.Millisecond)
+		}
 	}
 
 	// Final password hash (bcrypt of client-side hashed password)
@@ -68,20 +78,33 @@ func CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Store user
+	// Store user with only the required fields
 	user := service.User{
 		EmailHash: req.Email,
 		Password:  bcryptHash,
-		OrgSlug:   org.OrgSlug,
+		Slug:      org.Slug,
 		OrgType:   org.OrgType,
 		CreatedAt: time.Now(),
 	}
 
-	if err := service.SaveUser(user); err != nil {
+	userID, err := service.SaveUser(user)
+	if err != nil {
 		log.Printf("SaveUser failed: %+v", err)
 		http.Error(w, "Failed to create user", http.StatusInternalServerError)
 		return
 	}
+
+	// Create or fetch membership (user ↔ org)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, _, err = service.UpsertMembership(ctx, userID, org.ID)
+	if err != nil {
+		log.Printf("UpsertMembership failed: %+v", err)
+		// not fatal for account creation, but good to surface
+		http.Error(w, "Failed to link org membership", http.StatusInternalServerError)
+		return
+	}
+	// Membership created successfully (logging removed for security reasons)
 
 	json.NewEncoder(w).Encode(CreateAccountResponse{Message: "User created successfully"})
 }

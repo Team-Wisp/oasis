@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,11 +16,12 @@ func getUserCollection() *mongo.Collection {
 }
 
 type User struct {
-	EmailHash string    `bson:"emailHash"`
-	Password  string    `bson:"password"` // bcrypt hash
-	OrgSlug   string    `bson:"org"`
-	OrgType   string    `bson:"orgType"`
-	CreatedAt time.Time `bson:"createdAt"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	EmailHash string             `bson:"emailHash"`
+	Password  string             `bson:"password"` // bcrypt hash
+	Slug      string             `bson:"org"`
+	OrgType   string             `bson:"orgType"`
+	CreatedAt time.Time          `bson:"createdAt"`
 }
 
 func HashPassword(preHashed string) (string, error) {
@@ -26,10 +29,16 @@ func HashPassword(preHashed string) (string, error) {
 	return string(hash), err
 }
 
-func SaveUser(user User) error {
+func SaveUser(user User) (primitive.ObjectID, error) {
 	coll := getUserCollection()
-	_, err := coll.InsertOne(context.TODO(), user)
-	return err
+	res, err := coll.InsertOne(context.TODO(), user)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
+		return oid, nil
+	}
+	return primitive.NilObjectID, fmt.Errorf("inserted id not ObjectID")
 }
 
 func DoesUserExist(emailHash string) (bool, error) {

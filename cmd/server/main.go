@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/Team-Wisp/oasis/internal/handler"
-	"github.com/Team-Wisp/oasis/internal/middleware"
 	"github.com/Team-Wisp/oasis/internal/service"
 	"github.com/joho/godotenv"
 )
@@ -31,8 +30,7 @@ func main() {
 	// Load environment variables from .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("No .env file found or failed to load")
-		return
+		log.Println("No .env file found; relying on process env")
 	}
 	//connect to db
 	service.InitRedis()
@@ -44,21 +42,21 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	// Auth & login pages with secure headers
-	mux.Handle("/signup", middleware.SecureHeadersMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/signup.html")
-	})))
-
-	mux.Handle("/login", middleware.SecureHeadersMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/login.html")
-	})))
-
-	// mux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+	// mux.Handle("/signup", middleware.SecureHeadersMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// 	http.ServeFile(w, r, "./static/signup.html")
-	// })
+	// })))
 
-	// mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+	// mux.Handle("/login", middleware.SecureHeadersMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// 	http.ServeFile(w, r, "./static/login.html")
-	// })
+	// })))
+
+	mux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/signup.html")
+	})
+
+	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/login.html")
+	})
 
 	//API Endpoints
 	mux.Handle("/verify-domain", corsMiddleware(http.HandlerFunc(handler.VerifyHandler)))

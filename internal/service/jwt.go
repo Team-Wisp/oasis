@@ -8,7 +8,7 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 )
 
-func GenerateJWT(emailHash, orgSlug, orgType string) (string, error) {
+func GenerateJWT(orgSlug, orgType, membershipId string) (string, error) {
 	var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 	signer, err := jose.NewSigner(jose.SigningKey{
 		Algorithm: jose.HS256,
@@ -17,15 +17,14 @@ func GenerateJWT(emailHash, orgSlug, orgType string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	//log.Printf("JWT_SECRET (Go): %q (len=%d)", jwtSecret, len(jwtSecret))
 
 	now := time.Now().Unix()
 	claims := map[string]interface{}{
-		"sub":     emailHash,
 		"org":     orgSlug,
 		"orgType": orgType,
+		"mid":     membershipId,
 		"iat":     now,
-		"exp":     now + 86400, // 24 hours in seconds
+		"exp":     now + 86400, //24 hours in seconds
 	}
 
 	// Marshal claims into JSON
